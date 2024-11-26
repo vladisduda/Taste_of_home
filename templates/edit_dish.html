@@ -1,0 +1,183 @@
+{% extends 'base.html' %} {% block content %}
+<form method="POST" enctype="multipart/form-data" class="d-inline">
+	<div class="container">
+		<div class="row">
+			<h1 class="my-4">
+				<input
+					type="text"
+					name="name"
+					class="form-control form-control-lg d-inline w-50"
+					value="{{ dish[2] }}"
+					required
+				/>
+				<button
+					type="button"
+					class="btn btn-primary ms-2"
+					data-bs-toggle="modal"
+					data-bs-target="#exampleModal"
+				>
+					Сохранить изменения
+				</button>
+			</h1>
+
+			<!-- Carousel for Images -->
+			{% if dish[11] is not none %} {% set img_paths = dish[11].split(',') %}
+			<div class="col-md-5 mb-5">
+				{% if img_paths|length > 1 %}
+				<div id="carouselExample" class="carousel slide">
+					<div class="carousel-inner">
+						{% for img_path in img_paths %} {% if img_path.strip() %}
+						<div class="carousel-item {% if loop.first %}active{% endif %}">
+							<img
+								src="/static/img/{{ img_path.strip() }}"
+								style="object-fit: cover"
+								class="img-fluid"
+								alt="Изображение блюда"
+							/>
+						</div>
+						{% endif %} {% endfor %}
+					</div>
+					<!-- Carousel controls -->
+					<button
+						class="carousel-control-prev"
+						type="button"
+						data-bs-target="#carouselExample"
+						data-bs-slide="prev"
+					>
+						<span class="carousel-control-prev-icon" aria-hidden="true"></span>
+						<span class="visually-hidden">Previous</span>
+					</button>
+					<button
+						class="carousel-control-next"
+						type="button"
+						data-bs-target="#carouselExample"
+						data-bs-slide="next"
+					>
+						<span class="carousel-control-next-icon" aria-hidden="true"></span>
+						<span class="visually-hidden">Next</span>
+					</button>
+				</div>
+				{% else %}
+				<img
+					src="/static/img/{{ img_paths[0].strip() }}"
+					style="object-fit: cover"
+					class="img-fluid"
+					alt="Изображение блюда"
+				/>
+				{% endif %}
+			</div>
+			{% endif %}
+
+			<!-- Editable Dish Details -->
+			<div class="col-md-6">
+				<div class="row">
+					<div class="col">
+						<h3 class="my-3">Описание</h3>
+						<textarea
+							name="description"
+							class="form-control"
+							style="height: 100px"
+						>
+							{{ dish[4] or 'Описание отсутствует' }}
+						</textarea
+						>
+
+						<h3 class="my-3">Ингредиенты</h3>
+						<textarea
+							name="ingredients"
+							class="form-control"
+							style="height: 100px"
+						>
+{{ dish[6] }}
+						</textarea
+						>
+
+						<h3 class="my-3">Алкоголь</h3>
+						<div class="form-check">
+							<input
+								type="checkbox"
+								name="alcohol"
+								class="form-check-input"
+								{%
+								if
+								dish[7]
+								%}
+								checked
+								{%
+								endif
+								%}
+							/>
+							<label class="form-check-label">Содержит алкоголь</label>
+						</div>
+
+						<h3 class="my-3">Цена</h3>
+						<input
+							type="number"
+							name="price"
+							class="form-control"
+							value="{{ dish[3] }}"
+							required
+						/>
+					</div>
+
+					<div class="col">
+						<h4 class="my-3">Время приготовления</h4>
+						<input
+							type="time"
+							name="time"
+							class="form-control"
+							value="{{ dish[9] }}"
+						/>
+
+						<h4 class="my-3">Адрес приготовления</h4>
+						<input
+							type="text"
+							name="address"
+							class="form-control"
+							value="{{ dish[8] }}"
+						/>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<div
+		class="modal fade"
+		id="exampleModal"
+		tabindex="-1"
+		aria-labelledby="exampleModalLabel"
+		aria-hidden="true"
+	>
+		<div class="modal-dialog modal-dialog-centered">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h1 class="modal-title fs-5" id="exampleModalLabel">
+						Редактирование
+					</h1>
+					<button
+						type="button"
+						class="btn-close"
+						data-bs-dismiss="modal"
+						aria-label="Close"
+					></button>
+				</div>
+				<div class="modal-body">
+					Вы уверены, что готовы применить изменения?
+				</div>
+				<div class="modal-footer">
+					<button
+						type="button"
+						class="btn btn-secondary"
+						data-bs-dismiss="modal"
+					>
+						Отмена
+					</button>
+
+					<button type="submit" class="btn btn-primary">Подтвердить</button>
+				</div>
+			</div>
+		</div>
+	</div>
+</form>
+{% endblock %}

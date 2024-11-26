@@ -1,0 +1,65 @@
+{% extends 'base.html' %} {% block content %}
+<div class="container">
+	<h2 class="mb-4">Регистрация</h2>
+	<form method="POST" action="{{ url_for('register') }}">
+		<div class="row">
+			<div class="col">
+				<label for="number">Номер телефона:</label>
+
+				<div class="input-group flex-nowrap">
+					<span class="input-group-text" id="addon-wrapping">+7</span>
+					<input type="text" class="form-control" name="number" required />
+				</div>
+				<div class="form-group">
+					<label for="password">Пароль:</label>
+					<input
+						type="password"
+						class="form-control"
+						name="password"
+						required
+					/>
+				</div>
+			</div>
+			<div class="col">
+				<div class="form-group">
+					<label for="role">Роль:</label>
+					<select class="input-group-text" name="role">
+						<option value="customer">Пользователь</option>
+						<option value="chef">Повар</option>
+						<option value="courier">Курьер</option>
+					</select>
+				</div>
+				<div class="form-group mb-3">
+					<label for="address">Адрес:</label>
+
+					<input
+						type="text"
+						name="address"
+						id="addressInput1"
+						class="form-control"
+						readonly
+					/>
+
+					<div class="invalid-feedback">Введите адрес доставки.</div>
+				</div>
+			</div>
+		</div>
+		<div class="row">
+			<div id="map1" class="mb-4" style="width: 100%; height: 400px"></div>
+		</div>
+
+		<button type="submit" class="btn btn-primary btn-block">
+			Зарегистрироваться
+		</button>
+	</form>
+</div>
+<script
+	src="https://api-maps.yandex.ru/2.1/?lang=ru_RU"
+	type="text/javascript"
+></script>
+<script src="{{ url_for('static', filename='js/map.js') }}"></script>
+<script>
+	// Инициализация карты для страницы
+	initMap(1)
+</script>
+{% endblock %}

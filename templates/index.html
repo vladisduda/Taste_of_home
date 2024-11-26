@@ -1,0 +1,88 @@
+{% extends 'base.html' %} {% block content %}
+<table class="table table-bordered">
+	<thead>
+		<tr>
+			<th class="text-center">Место для категорий</th>
+		</tr>
+	</thead>
+</table>
+<div class="container text-center">
+	<div class="row row-cols-4">
+		{% for dish in dishes %}
+		<div class="col">
+			<div class="card">
+				<div class="card-body">
+					{% if dish[11] is not none %} {% set img_paths = dish[11].split(',')
+					%}
+					<div id="carouselExample{{ loop.index }}" class="carousel slide">
+						<!-- Carousel inner with images -->
+						<div class="carousel-inner">
+							{% for img_path in img_paths %} {% if img_path.strip() %}
+							<div class="carousel-item {% if loop.first %}active{% endif %}">
+								<img
+									src="/static/img/{{ img_path.strip() }}"
+									class="d-block w-100"
+									style="height: 200px; object-fit: cover"
+									alt="{{ img_path.strip() }}"
+								/>
+							</div>
+							{% endif %} {% endfor %}
+						</div>
+						{% if img_paths|length > 1 %}
+						<!-- Carousel controls (previous/next) -->
+						<button
+							class="carousel-control-prev"
+							type="button"
+							data-bs-target="#carouselExample{{ loop.index }}"
+							data-bs-slide="prev"
+						>
+							<span
+								class="carousel-control-prev-icon"
+								aria-hidden="true"
+							></span>
+							<span class="visually-hidden">Previous</span>
+						</button>
+						<button
+							class="carousel-control-next"
+							type="button"
+							data-bs-target="#carouselExample{{ loop.index }}"
+							data-bs-slide="next"
+						>
+							<span
+								class="carousel-control-next-icon"
+								aria-hidden="true"
+							></span>
+							<span class="visually-hidden">Next</span>
+						</button>
+						{% endif %}
+					</div>
+					{% endif %}
+
+					<h2 class="card-title">{{ dish[2] }}</h2>
+					<div class="container text-center">
+						<div class="d-grid gap-2 d-md-block">
+							<a> ≈{{ dish[9] }} мин </a>
+							<a> {{ dish[3] }} ₽ </a>
+						</div>
+						<div class="d-grid gap-2 d-md-block">
+							<a>
+								★{{ dish[5] if dish[5] is not none else 'Оценки пока нет' }}
+							</a>
+
+							<form
+								method="GET"
+								action="{{ url_for('detail_dish', id_dish=dish[0]) }}"
+							>
+								<button type="submit" class="btn btn-success mt-2">
+									Подробнее
+								</button>
+							</form>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		{% endfor %}
+	</div>
+</div>
+{% endblock %}

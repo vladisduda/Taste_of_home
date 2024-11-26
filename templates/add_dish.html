@@ -1,0 +1,253 @@
+{% extends 'base.html' %} {% block content %}
+
+<div class="container">
+	{% if current_user.role == 'admin' %}
+	<h3>Список всех блюд</h3>
+	{% else %}
+	<h3>Список ваших блюд</h3>
+
+	<form method="POST" enctype="multipart/form-data" class="p-3 border rounded">
+		<div class="row mb-3">
+			<div class="col-md-3">
+				<input
+					type="text"
+					class="form-control"
+					id="name"
+					name="name"
+					placeholder="Название"
+					required
+				/>
+			</div>
+			<div class="col-md-3">
+				<input
+					type="number"
+					class="form-control"
+					id="price"
+					name="price"
+					placeholder="Цена"
+					required
+				/>
+			</div>
+			<div class="col-md-6">
+				<textarea
+					class="form-control"
+					id="description"
+					name="description"
+					placeholder="Описание"
+				></textarea>
+			</div>
+		</div>
+
+		<div class="row mb-3">
+			<div class="col-md-6">
+				<input
+					type="file"
+					class="form-control"
+					id="img"
+					name="img"
+					accept="image/*"
+					multiple
+				/>
+			</div>
+			<div class="col-md-6">
+				<textarea
+					class="form-control"
+					id="ingredients"
+					name="ingredients"
+					placeholder="Ингредиенты"
+				></textarea>
+			</div>
+		</div>
+
+		<div class="row mb-3">
+			<div class="col-md-3 form-check">
+				<input
+					type="checkbox"
+					class="form-check-input"
+					id="alcohol"
+					name="alcohol"
+				/>
+				<label class="form-check-label" for="alcohol">Алкоголь</label>
+			</div>
+			<div class="col-md-5">
+				<div class="row mb-3">
+					<div class="col-md-8">
+						<input
+							type="text"
+							class="form-control"
+							id="address"
+							name="address"
+							placeholder="Место приготовления"
+						/>
+						<input
+							type="checkbox"
+							class="form-check-input"
+							id="default address"
+							name="default address"
+						/>
+						<label class="form-check-label" for="default address"
+							>По умолчанию</label
+						>
+					</div>
+				</div>
+			</div>
+			<div class="col-md-4">
+				<label for="time" class="form-label">Время приготовления</label>
+				<input
+					type="time"
+					class="form-control"
+					id="time"
+					name="time"
+					placeholder="Время приготовления"
+				/>
+			</div>
+		</div>
+
+		<div class="row">
+			<div class="col-12">
+				<button type="submit" class="btn btn-primary w-100">Добавить</button>
+			</div>
+		</div>
+	</form>
+
+	{% endif %}
+
+	<table class="table table-bordered">
+		<thead>
+			<tr>
+				<th></th>
+				<th>Блюда</th>
+				<th>Заказы</th>
+				<th>Отзывы</th>
+			</tr>
+		</thead>
+		<tbody>
+			<tr>
+				<th>Количество</th>
+				<th>{{ dishes | length }}</th>
+				<th></th>
+				<th></th>
+			</tr>
+		</tbody>
+	</table>
+
+	<table
+		class="table table-bordered text-center"
+		style="
+			width: 100%; /* Таблица занимает всю ширину родительского контейнера */
+			table-layout: fixed; /* Фиксированная ширина столбцов */
+		"
+	>
+		<thead>
+			<tr>
+				<th>Название</th>
+				<th>Цена</th>
+				<th>Описание</th>
+				<th>Изображение</th>
+				<th>Средняя оценка</th>
+				<th>Ингредиенты</th>
+				<th>Алкоголь</th>
+				<th>Адрес</th>
+				<th>Время приготовления</th>
+				<th></th>
+			</tr>
+		</thead>
+		<tbody>
+			{% for dish in dishes %}
+			<tr>
+				<td>
+					<form
+						method="GET"
+						action="{{ url_for('detail_dish', id_dish=dish[0]) }}"
+					>
+						<button type="submit" class="btn btn-primary">{{ dish[2] }}</button>
+					</form>
+				</td>
+
+				<td>{{ dish[3] }}</td>
+				<td>{{ dish[4] }}</td>
+				<td style="overflow: hidden; text-overflow: ellipsis">
+					{{ dish[11] }}
+				</td>
+				<td>{{ 'отсутствует' if dish[5] == None else dish[5] }}</td>
+				<td>{{ dish[6] }}</td>
+				<td>{{ 'отсутствует' if dish[7] == 0 else 'присутствует' }}</td>
+				<td>{{ dish[8] }}</td>
+				<td>{{ dish[9] }}</td>
+
+				<td>
+					<button
+						type="button"
+						class="btn btn-danger"
+						data-bs-toggle="modal"
+						data-bs-target="#exampleModal{{ dish[0] }}"
+					>
+						<svg
+							xmlns="http://www.w3.org/2000/svg"
+							width="16"
+							height="16"
+							fill="currentColor"
+							class="bi bi-trash-fill"
+							viewBox="0 0 16 16"
+						>
+							<path
+								d="M2.5 1a1 1 0 0 0-1 1v1a1 1 0 0 0 1 1H3v9a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V4h.5a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H10a1 1 0 0 0-1-1H7a1 1 0 0 0-1 1zm3 4a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 .5-.5M8 5a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7A.5.5 0 0 1 8 5m3 .5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 1 0"
+							/>
+						</svg>
+					</button>
+
+					<!-- Unique Modal -->
+					<div
+						class="modal fade"
+						id="exampleModal{{ dish[0] }}"
+						tabindex="-1"
+						aria-labelledby="exampleModalLabel{{ dish[0] }}"
+						aria-hidden="true"
+					>
+						<div class="modal-dialog modal-dialog-centered">
+							<div class="modal-content">
+								<div class="modal-header">
+									<h1
+										class="modal-title fs-5"
+										id="exampleModalLabel{{ dish[0] }}"
+									>
+										Подтверждение удаления
+									</h1>
+									<button
+										type="button"
+										class="btn-close"
+										data-bs-dismiss="modal"
+										aria-label="Close"
+									></button>
+								</div>
+								<div class="modal-body">
+									Вы уверены, что хотите удалить это блюдо?
+								</div>
+								<div class="modal-footer">
+									<button
+										type="button"
+										class="btn btn-secondary"
+										data-bs-dismiss="modal"
+									>
+										Отмена
+									</button>
+
+									<form
+										method="POST"
+										action="{{ url_for('delete_dish', id_dish=dish[0]) }}"
+									>
+										<button type="submit" class="btn btn-danger">
+											Подтвердить
+										</button>
+									</form>
+								</div>
+							</div>
+						</div>
+					</div>
+				</td>
+			</tr>
+			{% endfor %}
+		</tbody>
+	</table>
+</div>
+{% endblock %}

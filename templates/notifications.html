@@ -1,0 +1,224 @@
+{% extends 'base.html' %} {% block content %}
+
+<div class="container">
+	<h1 class="my-4">Уведомления</h1>
+
+	<!-- Отображение новых и активных заказов -->
+	{% if notifications|length > 0 %} {% for notification in
+	notifications|sort(attribute=0, reverse=True) %}
+	<!-- Заказы, которые не завершены -->
+	{% if notification[9] != "ready and awaiting delivery" %}
+	<div class="card mb-3">
+		<div class="card-body">
+			<div class="row">
+				<div class="col">
+					<ul>
+						<li>Заказ №{{ notification[0] }} {{ notification[4] }}</li>
+						<p>Количество: {{ notification[6] }}<br /></p>
+						<form
+							method="GET"
+							action="{{ url_for('detail_dish', id_dish=notification[2]) }}"
+						>
+							Блюдо:
+							<button type="submit" class="btn btn-success mt-2">
+								{{ get_dish_name_by_id(notification[2]) }}
+							</button>
+						</form>
+					</ul>
+				</div>
+
+				<div class="col">
+					{% if notification[9] == "issued" %}
+					<!-- Кнопка Принять заказ -->
+					<div class="row">
+						<div class="col">
+							<button
+								type="button"
+								class="btn btn-primary"
+								data-bs-toggle="modal"
+								data-bs-target="#acceptModal{{ loop.index }}"
+							>
+								Принять заказ
+							</button>
+						</div>
+					</div>
+
+					<!-- Модальное окно для принятия заказа -->
+					<div
+						class="modal fade"
+						id="acceptModal{{ loop.index }}"
+						tabindex="-1"
+						aria-labelledby="acceptModalLabel{{ loop.index }}"
+						aria-hidden="true"
+					>
+						<div class="modal-dialog modal-dialog-centered">
+							<div class="modal-content">
+								<div class="modal-header">
+									<h1
+										class="modal-title fs-5"
+										id="acceptModalLabel{{ loop.index }}"
+									>
+										Подтверждение заказа
+									</h1>
+									<button
+										type="button"
+										class="btn-close"
+										data-bs-dismiss="modal"
+										aria-label="Close"
+									></button>
+								</div>
+								<div class="modal-body">
+									Вы уверены, что хотите принять этот заказ?
+								</div>
+								<div class="modal-footer">
+									<button
+										type="button"
+										class="btn btn-secondary"
+										data-bs-dismiss="modal"
+									>
+										Отмена
+									</button>
+									<form
+										method="POST"
+										action="{{ url_for('update_status', id_order=notification[0]) }}"
+									>
+										<button
+											type="submit"
+											name="status"
+											value="cooking"
+											class="btn btn-primary"
+										>
+											Принять заказ
+										</button>
+									</form>
+								</div>
+							</div>
+						</div>
+					</div>
+
+					{% elif notification[9] == "cooking" %}
+					<!-- Кнопка Подтвердить приготовление -->
+					<div class="row">
+						<div class="col">
+							<button
+								type="button"
+								class="btn btn-primary"
+								data-bs-toggle="modal"
+								data-bs-target="#readyModal{{ loop.index }}"
+							>
+								Подтвердить приготовление
+							</button>
+						</div>
+					</div>
+
+					<!-- Модальное окно для подтверждения приготовления -->
+					<div
+						class="modal fade"
+						id="readyModal{{ loop.index }}"
+						tabindex="-1"
+						aria-labelledby="readyModalLabel{{ loop.index }}"
+						aria-hidden="true"
+					>
+						<div class="modal-dialog modal-dialog-centered">
+							<div class="modal-content">
+								<div class="modal-header">
+									<h1
+										class="modal-title fs-5"
+										id="readyModalLabel{{ loop.index }}"
+									>
+										Подтверждение готовности
+									</h1>
+									<button
+										type="button"
+										class="btn-close"
+										data-bs-dismiss="modal"
+										aria-label="Close"
+									></button>
+								</div>
+								<div class="modal-body">Вы уверены, что заказ готов?</div>
+								<div class="modal-footer">
+									<button
+										type="button"
+										class="btn btn-secondary"
+										data-bs-dismiss="modal"
+									>
+										Отмена
+									</button>
+									<form
+										method="POST"
+										action="{{ url_for('update_status', id_order=notification[0]) }}"
+									>
+										<button
+											type="submit"
+											name="status"
+											value="ready and awaiting delivery"
+											class="btn btn-primary"
+										>
+											Подтвердить готовность
+										</button>
+									</form>
+								</div>
+							</div>
+						</div>
+					</div>
+					{% endif %}
+				</div>
+			</div>
+		</div>
+	</div>
+
+	{% endif %} {% endfor %} {% else %} {% endif %}
+
+	<!-- Кнопка для отображения завершенных заказов -->
+	<button class="btn btn-secondary my-4" id="toggleCompletedOrders">
+		Показать
+	</button>
+
+	<!-- Отображение завершенных заказов -->
+	<div id="completedOrders" class="d-none">
+		<h3>Завершенные заказы</h3>
+		{% for notification in notifications|sort(attribute=0, reverse=True) %} {%
+		if notification[9] == "ready and awaiting delivery" %}
+		<div class="card mb-3">
+			<div class="card-body">
+				<div class="row">
+					<div class="col">
+						<ul>
+							<li>Заказ №{{ notification[0] }} {{ notification[4] }}</li>
+							<p>Количество: {{ notification[6] }}<br /></p>
+
+							<form
+								method="GET"
+								action="{{ url_for('detail_dish', id_dish=notification[2]) }}"
+							>
+								Блюдо:
+								<button type="submit" class="btn btn-success mt-2">
+									{{ get_dish_name_by_id(notification[2]) }}
+								</button>
+							</form>
+						</ul>
+					</div>
+				</div>
+			</div>
+		</div>
+		{% endif %} {% endfor %}
+	</div>
+</div>
+
+<script>
+	// Скрипт для переключения отображения завершенных заказов
+	document
+		.getElementById('toggleCompletedOrders')
+		.addEventListener('click', function () {
+			var completedOrdersDiv = document.getElementById('completedOrders')
+			if (completedOrdersDiv.classList.contains('d-none')) {
+				completedOrdersDiv.classList.remove('d-none')
+				this.textContent = 'Скрыть завершенные заказы'
+			} else {
+				completedOrdersDiv.classList.add('d-none')
+				this.textContent = 'Показать завершенные заказы'
+			}
+		})
+</script>
+
+{% endblock %}

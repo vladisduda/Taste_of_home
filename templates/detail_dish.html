@@ -1,0 +1,172 @@
+{% extends 'base.html' %} {% block content %}
+<div class="container">
+	<div class="row">
+		<h1 class="my-4">
+			{{ dish[2] }} {% if current_user.is_authenticated and current_user.id ==
+			dish[1] %}
+			<!-- Assuming dish[1] is the id_user associated with the dish -->
+			<form
+				method="GET"
+				action="{{ url_for('edit_dish', id_dish=dish[0]) }}"
+				style="display: inline"
+			>
+				<button type="submit" class="btn btn-primary">Редактировать</button>
+			</form>
+			{% endif %}
+		</h1>
+
+		<!-- Название блюда -->
+		{% if dish[11] is not none %} {% set img_paths = dish[11].split(',') %}
+		<div class="col-md-5 mb-5">
+			{% if img_paths|length > 1 %}
+			<div id="carouselExample" class="carousel slide">
+				<!-- Carousel inner with images -->
+				<div class="carousel-inner">
+					{% for img_path in img_paths %} {% if img_path.strip() %}
+					<div class="carousel-item {% if loop.first %}active{% endif %}">
+						<img
+							src="/static/img/{{ img_path.strip() }}"
+							style="object-fit: cover"
+							class="img-fluid"
+							alt="{{ img_path.strip() }}"
+						/>
+					</div>
+					{% endif %} {% endfor %}
+				</div>
+				<!-- Carousel controls (previous/next) -->
+				<button
+					class="carousel-control-prev"
+					type="button"
+					data-bs-target="#carouselExample"
+					data-bs-slide="prev"
+				>
+					<span class="carousel-control-prev-icon" aria-hidden="true"></span>
+					<span class="visually-hidden">Previous</span>
+				</button>
+				<button
+					class="carousel-control-next"
+					type="button"
+					data-bs-target="#carouselExample"
+					data-bs-slide="next"
+				>
+					<span class="carousel-control-next-icon" aria-hidden="true"></span>
+					<span class="visually-hidden">Next</span>
+				</button>
+			</div>
+			{% else %}
+			<!-- Single image without carousel -->
+			{% for img_path in img_paths %} {% if img_path.strip() %}
+			<img
+				src="/static/img/{{ img_path.strip() }}"
+				style="object-fit: cover"
+				class="img-fluid"
+				alt="{{ img_path.strip() }}"
+			/>
+			{% endif %} {% endfor %} {% endif %}
+		</div>
+		{% endif %}
+		<div class="col-md-6">
+			<div class="row">
+				<div class="col">
+					<h3 class="my-3">Описание</h3>
+					<p>{{ dish[4] }}</p>
+					<h3 class="my-3">Ингредиенты</h3>
+					<p>{{ dish[6] }}</p>
+					<h3 class="my-3">Алкоголь</h3>
+					<p>{{ 'отсутствует' if dish[7] == 0 else 'присутствует' }}</p>
+					<h3 class="my-3">Цена {{ dish[3] }}₽</h3>
+
+					<h3>
+						Повар
+						<form method="GET" action="">
+							<button type="submit" class="btn btn-success mt-2">
+								{{ get_user_name_by_id(dish[1]) }}
+							</button>
+						</form>
+					</h3>
+				</div>
+
+				<div class="col">
+					<h4 class="my-3">Время приготовления</h4>
+					<p>≈{{dish[9] }} мин</p>
+					<h4 class="my-3">Адрес приготовления</h4>
+					<p>{{ dish[8] }}</p>
+					<h4 class="my-3">
+						{{ 'Оценка отсутствует' if dish[5] == None else dish[5] + '★' }}
+					</h4>
+					{% if current_user.is_authenticated %}
+					<form
+						method="GET"
+						action="{{ url_for('add_order', id_dish=dish[0]) }}"
+					>
+						<button type="submit" class="btn btn-primary">
+							Перейти к заказу
+						</button>
+					</form>
+					{% else %}
+					<button
+						class="btn btn-primary"
+						type="button"
+						data-bs-toggle="modal"
+						data-bs-target="#exampleModal"
+					>
+						Перейти к заказу
+					</button>
+					<div
+						class="modal fade"
+						id="exampleModal"
+						tabindex="-1"
+						aria-labelledby="exampleModalLabel"
+						aria-hidden="true"
+					>
+						<div class="modal-dialog modal-dialog-centered">
+							<div class="modal-content">
+								<div class="modal-header">
+									<h1 class="modal-title fs-5" id="exampleModalLabel">Заказ</h1>
+									<button
+										type="button"
+										class="btn-close"
+										data-bs-dismiss="modal"
+										aria-label="Close"
+									></button>
+								</div>
+								<div class="modal-body">
+									Чтобы перейти к заказу, нужно пройти авторизацию.
+								</div>
+								<div class="modal-footer">
+									<button
+										type="button"
+										class="btn btn-secondary"
+										data-bs-dismiss="modal"
+									>
+										Отмена
+									</button>
+
+									<a
+										class="btn btn-primary"
+										aria-current="page"
+										href=""
+										data-bs-toggle="modal"
+										data-bs-target="#loginModal"
+										>Войти</a
+									>
+								</div>
+							</div>
+						</div>
+					</div>
+					{% endif %}
+				</div>
+			</div>
+		</div>
+
+		<table class="table table-bordered">
+			<thead>
+				<tr>
+					<th class="text-center">Место отзывов</th>
+				</tr>
+			</thead>
+		</table>
+	</div>
+</div>
+
+{% endblock %}

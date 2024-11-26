@@ -1,0 +1,78 @@
+{% extends 'base.html' %} {% block content %}
+
+<div class="container">
+	<h3>
+		{% if current_user.role == 'admin' %} Заказы {% else %} Ваши заказы {% endif
+		%}
+	</h3>
+
+	<table class="table table-bordered text-center">
+		<thead>
+			<tr>
+				{% if current_user.role == 'admin' %}
+				<th>Клиент</th>
+				{% else %} {% endif %}
+
+				<th>Блюдо</th>
+				<th>Курьер</th>
+				<th>Статус заказа</th>
+				<th>Цена</th>
+				<th>Количество</th>
+				<th>Адрес доставки</th>
+				<th>Пожелания к заказу</th>
+				<th>Дата заказа</th>
+				<th></th>
+			</tr>
+		</thead>
+		<tbody class="table table-bordered text-center">
+			{% for order in orders %}
+			<tr>
+				{% if current_user.role == 'admin' %}
+				<td>{{ get_user_name_by_id(order[1]) }}</td>
+				{% else %} {% endif %}
+
+				<td>
+					<form
+						method="GET"
+						action="{{ url_for('detail_dish', id_dish=order[2]) }}"
+					>
+						<button type="submit" class="btn">
+							{{ get_dish_name_by_id(order[2]) }}
+						</button>
+					</form>
+				</td>
+				<!-- ID Блюда -->
+
+				<td>{{ order[3] if order[3] is not none else 'Ожидает' }}</td>
+				<!-- ID Курьера -->
+				<td></td>
+				<!-- Статус заказа -->
+
+				<td>{{ order[5] }}</td>
+				<!-- Цена -->
+
+				<td>{{ order[6] }}</td>
+				<!-- Количество -->
+
+				<td>{{ order[7] }}</td>
+				<!-- Адрес доставки -->
+
+				<td>{{ order[8] }}</td>
+				<!-- Пожелания к заказу -->
+
+				<td>{{ order[4] }}</td>
+				<!-- Дата заказа -->
+				<td>
+					<form method="GET" action="">
+						<button type="submit" class="btn btn-primary">
+							Написать отзыв
+						</button>
+					</form>
+				</td>
+				<!-- Написать отзыв -->
+			</tr>
+			{% endfor %}
+		</tbody>
+	</table>
+</div>
+{% endblock %}
