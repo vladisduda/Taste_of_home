@@ -17,7 +17,7 @@
 				<th>Курьер</th>
 				<th>Статус заказа</th>
 				<th>Цена</th>
-				<th>Количество</th>
+				<th>Кол-во</th>
 				<th>Адрес доставки</th>
 				<th>Пожелания к заказу</th>
 				<th>Дата заказа</th>
@@ -43,9 +43,15 @@
 				</td>
 				<!-- ID Блюда -->
 
-				<td>{{ order[3] if order[3] is not none else 'Ожидает' }}</td>
+				<td>{{ get_user_name_by_id(order[3])}}</td>
 				<!-- ID Курьера -->
-				<td></td>
+				<td>
+					{% set status_translation = { 'issued': 'Отправлен', 'received':
+					'Повар получил заказ', 'confirmed': 'Повар подтвердил заказ',
+					'cooking': 'Готовится', 'ready and awaiting delivery': 'Заказ готов и
+					ожидает доставки', 'on the way': 'В пути', 'delivered': 'Доставлен', }
+					%} {{ status_translation.get(order[9], order[9]) }}
+				</td>
 				<!-- Статус заказа -->
 
 				<td>{{ order[5] }}</td>
@@ -57,14 +63,14 @@
 				<td>{{ order[7] }}</td>
 				<!-- Адрес доставки -->
 
-				<td>{{ order[8] }}</td>
+				<td>{{ order[8] if order[8] is not none else 'Отсутствуют' }}</td>
 				<!-- Пожелания к заказу -->
 
 				<td>{{ order[4] }}</td>
 				<!-- Дата заказа -->
 				<td>
 					<form method="GET" action="">
-						<button type="submit" class="btn btn-primary">
+						<button type="submit" class="btn btn-primary" disabled>
 							Написать отзыв
 						</button>
 					</form>

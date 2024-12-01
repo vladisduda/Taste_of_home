@@ -1,29 +1,38 @@
 {% extends 'base.html' %} {% block content %}
 <div class="container">
 	<h2 class="mb-4">Регистрация</h2>
-	<form method="POST" action="{{ url_for('register') }}">
+	<form id="registerForm" method="POST" action="{{ url_for('register') }}">
 		<div class="row">
 			<div class="col">
-				<label for="number">Номер телефона:</label>
-
-				<div class="input-group flex-nowrap">
-					<span class="input-group-text" id="addon-wrapping">+7</span>
-					<input type="text" class="form-control" name="number" required />
+				<div class="form-group mb-3">
+					<label for="number">Номер телефона:</label>
+					<div class="input-group has-validation">
+						<span class="input-group-text" id="addon-wrapping">+7</span>
+						<input
+							type="text"
+							class="form-control"
+							name="number"
+							id="numberInput"
+						/>
+						<div class="invalid-feedback">Заполните поле номера</div>
+					</div>
 				</div>
-				<div class="form-group">
+
+				<div class="form-group mb-3">
 					<label for="password">Пароль:</label>
 					<input
 						type="password"
 						class="form-control"
 						name="password"
-						required
+						id="passwordInput"
 					/>
+					<div class="invalid-feedback">Заполните поле пароля</div>
 				</div>
 			</div>
 			<div class="col">
-				<div class="form-group">
+				<div class="form-group mb-3">
 					<label for="role">Роль:</label>
-					<select class="input-group-text" name="role">
+					<select class="form-control" name="role">
 						<option value="customer">Пользователь</option>
 						<option value="chef">Повар</option>
 						<option value="courier">Курьер</option>
@@ -31,16 +40,14 @@
 				</div>
 				<div class="form-group mb-3">
 					<label for="address">Адрес:</label>
-
 					<input
 						type="text"
 						name="address"
-						id="addressInput1"
+						id="addressInput"
 						class="form-control"
 						readonly
 					/>
-
-					<div class="invalid-feedback">Введите адрес доставки.</div>
+					<div class="invalid-feedback">Выберите место на карте</div>
 				</div>
 			</div>
 		</div>
@@ -61,5 +68,33 @@
 <script>
 	// Инициализация карты для страницы
 	initMap(1)
+
+	// Проверка перед отправкой формы
+	document
+		.getElementById('registerForm')
+		.addEventListener('submit', function (e) {
+			let isValid = true
+
+			// Проверяем поля "номер телефона", "пароль" и "адрес"
+			const requiredFields = [
+				document.getElementById('numberInput'),
+				document.getElementById('passwordInput'),
+				document.getElementById('addressInput'),
+			]
+
+			requiredFields.forEach(field => {
+				if (!field.value.trim()) {
+					isValid = false
+					field.classList.add('is-invalid')
+				} else {
+					field.classList.remove('is-invalid')
+				}
+			})
+
+			// Если есть ошибки, отменяем отправку формы
+			if (!isValid) {
+				e.preventDefault()
+			}
+		})
 </script>
 {% endblock %}

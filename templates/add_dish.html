@@ -61,17 +61,33 @@
 
 		<div class="row mb-3">
 			<div class="col-md-3 form-check">
-				<input
-					type="checkbox"
-					class="form-check-input"
-					id="alcohol"
-					name="alcohol"
-				/>
-				<label class="form-check-label" for="alcohol">Алкоголь</label>
+				<div class="form-check form-switch">
+					<input
+						class="form-check-input"
+						type="checkbox"
+						role="switch"
+						id="alcohol"
+						name="alcohol"
+					/>
+					<label class="form-check-label" for="alcohol">Алкоголь</label>
+				</div>
 			</div>
 			<div class="col-md-5">
 				<div class="row mb-3">
 					<div class="col-md-8">
+						<div class="form-check form-switch">
+							<input
+								class="form-check-input"
+								type="checkbox"
+								role="switch"
+								id="default address"
+								name="default address"
+								checked
+							/>
+							<label class="form-check-label" for="default address"
+								>По умолчанию</label
+							>
+						</div>
 						<input
 							type="text"
 							class="form-control"
@@ -79,15 +95,6 @@
 							name="address"
 							placeholder="Место приготовления"
 						/>
-						<input
-							type="checkbox"
-							class="form-check-input"
-							id="default address"
-							name="default address"
-						/>
-						<label class="form-check-label" for="default address"
-							>По умолчанию</label
-						>
 					</div>
 				</div>
 			</div>
@@ -131,25 +138,98 @@
 		</tbody>
 	</table>
 
+	{% if current_user.role == 'chef' %}
+	<div class="container text-center">
+		<div class="row row-cols-4">
+			{% for dish in dishes %}
+			<div class="col">
+				<div
+					class="card"
+					style="cursor: pointer"
+					onclick="location.href='{{ url_for('detail_dish', id_dish=dish[0]) }}';"
+				>
+					<div class="card-body">
+						{% if dish[11] is not none %} {% set img_paths = dish[11].split(',')
+						%}
+						<div id="carouselExample{{ loop.index }}" class="carousel slide">
+							<!-- Carousel inner with images -->
+							<div class="carousel-inner">
+								{% for img_path in img_paths %} {% if img_path.strip() %}
+								<div class="carousel-item {% if loop.first %}active{% endif %}">
+									<img
+										src="/static/img/{{ img_path.strip() }}"
+										class="d-block w-100"
+										style="height: 200px; object-fit: cover"
+										alt="{{ img_path.strip() }}"
+									/>
+								</div>
+								{% endif %} {% endfor %}
+							</div>
+							{% if img_paths|length > 1 %}
+							<!-- Carousel controls (previous/next) -->
+							<button
+								class="carousel-control-prev"
+								type="button"
+								data-bs-target="#carouselExample{{ loop.index }}"
+								data-bs-slide="prev"
+							>
+								<span
+									class="carousel-control-prev-icon"
+									aria-hidden="true"
+								></span>
+								<span class="visually-hidden">Previous</span>
+							</button>
+							<button
+								class="carousel-control-next"
+								type="button"
+								data-bs-target="#carouselExample{{ loop.index }}"
+								data-bs-slide="next"
+							>
+								<span
+									class="carousel-control-next-icon"
+									aria-hidden="true"
+								></span>
+								<span class="visually-hidden">Next</span>
+							</button>
+							{% endif %}
+						</div>
+						{% endif %}
+
+						<h2 class="card-title">{{ dish[2] }}</h2>
+						<div class="container text-center">
+							<div class="d-grid gap-2 d-md-block">
+								<a> ≈{{ format_time(dish[9]) }} </a>
+								<a> {{ dish[3] }} ₽ </a>
+							</div>
+							<div class="d-grid gap-2 d-md-block">
+								<a>
+									★{{ dish[5] if dish[5] is not none else 'Оценки пока нет' }}
+								</a>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+			{% endfor %}
+		</div>
+	</div>
+	{% endif %} {% if current_user.role == 'admin' %}
 	<table
-		class="table table-bordered text-center"
-		style="
-			width: 100%; /* Таблица занимает всю ширину родительского контейнера */
-			table-layout: fixed; /* Фиксированная ширина столбцов */
-		"
+		class="table table-bordered text-center table-hover align-middle"
+		style="width: 100%; table-layout: fixed; word-wrap: break-word"
 	>
-		<thead>
+		<thead class="table">
 			<tr>
-				<th>Название</th>
-				<th>Цена</th>
-				<th>Описание</th>
-				<th>Изображение</th>
-				<th>Средняя оценка</th>
-				<th>Ингредиенты</th>
-				<th>Алкоголь</th>
-				<th>Адрес</th>
-				<th>Время приготовления</th>
-				<th></th>
+				<th style="width: 15%">Название</th>
+				<th style="width: 8%">Цена</th>
+				<th style="width: 10%">Описание</th>
+				<th style="width: 12%">Изображение</th>
+				<th style="width: 10%">Средняя оценка</th>
+				<th style="width: 10%">Ингредиенты</th>
+				<th style="width: 8%">Алкоголь</th>
+				<th style="width: 10%">Адрес</th>
+				<th style="width: 8%">Время</th>
+				<th style="width: 5%"></th>
 			</tr>
 		</thead>
 		<tbody>
@@ -160,21 +240,182 @@
 						method="GET"
 						action="{{ url_for('detail_dish', id_dish=dish[0]) }}"
 					>
-						<button type="submit" class="btn btn-primary">{{ dish[2] }}</button>
+						<button type="submit" class="btn btn-outline-primary w-100">
+							{{ dish[2][:15]}}...
+						</button>
 					</form>
 				</td>
-
-				<td>{{ dish[3] }}</td>
-				<td>{{ dish[4] }}</td>
-				<td style="overflow: hidden; text-overflow: ellipsis">
-					{{ dish[11] }}
+				<td>{{ dish[3] }} ₽</td>
+				<!-- Описание -->
+				<td>
+					<span
+						class="text-truncate d-inline-block"
+						style="max-width: 150px; cursor: pointer"
+						data-bs-toggle="modal"
+						data-bs-target="#descriptionModal{{ dish[0] }}"
+					>
+						{{ dish[4][:12] }}...
+					</span>
+					<!-- Модальное окно для Описания -->
+					<div
+						class="modal fade"
+						id="descriptionModal{{ dish[0] }}"
+						tabindex="-1"
+						aria-labelledby="descriptionModalLabel{{ dish[0] }}"
+						aria-hidden="true"
+					>
+						<div class="modal-dialog modal-lg">
+							<div class="modal-content">
+								<div class="modal-header">
+									<h5
+										class="modal-title"
+										id="descriptionModalLabel{{ dish[0] }}"
+									>
+										Описание
+									</h5>
+									<button
+										type="button"
+										class="btn-close"
+										data-bs-dismiss="modal"
+										aria-label="Закрыть"
+									></button>
+								</div>
+								<div class="modal-body">{{ dish[4] }}</div>
+							</div>
+						</div>
+					</div>
+				</td>
+				<td>
+					{% if dish[11] is not none %} {% set img_paths = dish[11].split(',')
+					%}
+					<div id="carouselExample{{ loop.index }}" class="carousel slide">
+						<!-- Carousel inner with images -->
+						<div class="carousel-inner">
+							{% for img_path in img_paths %} {% if img_path.strip() %}
+							<div class="carousel-item {% if loop.first %}active{% endif %}">
+								<img
+									src="/static/img/{{ img_path.strip() }}"
+									class="d-block w-100"
+									style="object-fit: cover"
+									alt="{{ img_path.strip() }}"
+								/>
+							</div>
+							{% endif %} {% endfor %}
+						</div>
+						{% if img_paths|length > 1 %}
+						<!-- Carousel controls (previous/next) -->
+						<button
+							class="carousel-control-prev"
+							type="button"
+							data-bs-target="#carouselExample{{ loop.index }}"
+							data-bs-slide="prev"
+						>
+							<span
+								class="carousel-control-prev-icon"
+								aria-hidden="true"
+							></span>
+							<span class="visually-hidden">Previous</span>
+						</button>
+						<button
+							class="carousel-control-next"
+							type="button"
+							data-bs-target="#carouselExample{{ loop.index }}"
+							data-bs-slide="next"
+						>
+							<span
+								class="carousel-control-next-icon"
+								aria-hidden="true"
+							></span>
+							<span class="visually-hidden">Next</span>
+						</button>
+						{% endif %}
+					</div>
+					{% endif %}
 				</td>
 				<td>{{ 'отсутствует' if dish[5] == None else dish[5] }}</td>
-				<td>{{ dish[6] }}</td>
-				<td>{{ 'отсутствует' if dish[7] == 0 else 'присутствует' }}</td>
-				<td>{{ dish[8] }}</td>
+				<!-- Ингредиенты -->
+				<td>
+					<span
+						class="text-truncate d-inline-block"
+						style="max-width: 150px; cursor: pointer"
+						data-bs-toggle="modal"
+						data-bs-target="#ingredientsModal{{ dish[0] }}"
+					>
+						{{ dish[6][:12] }}...
+					</span>
+					<!-- Модальное окно для Ингредиентов -->
+					<div
+						class="modal fade"
+						id="ingredientsModal{{ dish[0] }}"
+						tabindex="-1"
+						aria-labelledby="ingredientsModalLabel{{ dish[0] }}"
+						aria-hidden="true"
+					>
+						<div class="modal-dialog modal-lg">
+							<div class="modal-content">
+								<div class="modal-header">
+									<h5
+										class="modal-title"
+										id="ingredientsModalLabel{{ dish[0] }}"
+									>
+										Ингредиенты
+									</h5>
+									<button
+										type="button"
+										class="btn-close"
+										data-bs-dismiss="modal"
+										aria-label="Закрыть"
+									></button>
+								</div>
+								<div class="modal-body">{{ dish[6] }}</div>
+							</div>
+						</div>
+					</div>
+				</td>
+				<td>
+					<span
+						class="badge {{ 'bg-danger' if dish[7] == 1 else 'bg-success' }}"
+					>
+						{{ 'Присутствует' if dish[7] == 1 else 'Отсутствует' }}
+					</span>
+				</td>
+				<!-- Адрес -->
+				<td>
+					<span
+						class="text-truncate d-inline-block"
+						style="max-width: 150px; cursor: pointer"
+						data-bs-toggle="modal"
+						data-bs-target="#addressModal{{ dish[0] }}"
+					>
+						{{ dish[8][:12] }}...
+					</span>
+					<!-- Модальное окно для Адреса -->
+					<div
+						class="modal fade"
+						id="addressModal{{ dish[0] }}"
+						tabindex="-1"
+						aria-labelledby="addressModalLabel{{ dish[0] }}"
+						aria-hidden="true"
+					>
+						<div class="modal-dialog modal-lg">
+							<div class="modal-content">
+								<div class="modal-header">
+									<h5 class="modal-title" id="addressModalLabel{{ dish[0] }}">
+										Адрес
+									</h5>
+									<button
+										type="button"
+										class="btn-close"
+										data-bs-dismiss="modal"
+										aria-label="Закрыть"
+									></button>
+								</div>
+								<div class="modal-body">{{ dish[8] }}</div>
+							</div>
+						</div>
+					</div>
+				</td>
 				<td>{{ dish[9] }}</td>
-
 				<td>
 					<button
 						type="button"
@@ -195,7 +436,6 @@
 							/>
 						</svg>
 					</button>
-
 					<!-- Unique Modal -->
 					<div
 						class="modal fade"
@@ -249,5 +489,6 @@
 			{% endfor %}
 		</tbody>
 	</table>
+	{% endif %}
 </div>
 {% endblock %}

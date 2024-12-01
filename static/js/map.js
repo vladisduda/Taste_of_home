@@ -33,26 +33,3 @@ function initMap(dishId) {
 		})
 	})
 }
-
-// Функция для поиска адреса по введенному тексту
-function searchAddress(dishId) {
-	const address = document.getElementById('addressInput' + dishId).value
-	ymaps.geocode(address, { results: 1 }).then(function (res) {
-		const firstGeoObject = res.geoObjects.get(0)
-
-		if (firstGeoObject) {
-			const coords = firstGeoObject.geometry.getCoordinates()
-			map.setCenter(coords, 15)
-
-			// Устанавливаем метку на карте
-			if (placemark) {
-				placemark.geometry.setCoordinates(coords)
-			} else {
-				placemark = new ymaps.Placemark(coords, {}, { draggable: true })
-				map.geoObjects.add(placemark)
-			}
-		} else {
-			alert('Адрес не найден. Попробуйте указать другой адрес.')
-		}
-	})
-}

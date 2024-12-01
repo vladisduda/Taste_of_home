@@ -10,7 +10,11 @@
 	<div class="row row-cols-4">
 		{% for dish in dishes %}
 		<div class="col">
-			<div class="card">
+			<div
+				class="card"
+				style="cursor: pointer"
+				onclick="location.href='{{ url_for('detail_dish', id_dish=dish[0]) }}';"
+			>
 				<div class="card-body">
 					{% if dish[11] is not none %} {% set img_paths = dish[11].split(',')
 					%}
@@ -61,22 +65,13 @@
 					<h2 class="card-title">{{ dish[2] }}</h2>
 					<div class="container text-center">
 						<div class="d-grid gap-2 d-md-block">
-							<a> ≈{{ dish[9] }} мин </a>
+							<a> ≈{{ format_time(dish[9]) }} </a>
 							<a> {{ dish[3] }} ₽ </a>
 						</div>
 						<div class="d-grid gap-2 d-md-block">
 							<a>
 								★{{ dish[5] if dish[5] is not none else 'Оценки пока нет' }}
 							</a>
-
-							<form
-								method="GET"
-								action="{{ url_for('detail_dish', id_dish=dish[0]) }}"
-							>
-								<button type="submit" class="btn btn-success mt-2">
-									Подробнее
-								</button>
-							</form>
 						</div>
 					</div>
 				</div>

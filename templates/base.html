@@ -54,14 +54,16 @@
 								отзывы {% endif %}</a
 							>
 						</li>
-						{% if current_user.role == 'customer' %} {% else %}
+						{% if current_user.role == 'customer' %} {% elif current_user.role
+						== 'admin' %}{% else %}
 						<li class="nav-item">
 							<a
 								class="nav-link active position-relative"
 								aria-current="page"
 								href="{{ url_for('notifications') }}"
 							>
-								Уведомления {% if notification_count > 0 %}
+								{% if current_user.role == 'courier' %} Доставки {% else %}
+								Уведомления {% endif %} {% if notification_count > 0 %}
 								<span
 									class="position-absolute top-1 start-100 translate-middle badge rounded-pill text-bg-secondary"
 								>
@@ -173,18 +175,21 @@
 							aria-label="Close"
 						></button>
 					</div>
-					<div class="modal-body">
-						<form id="loginForm">
+					<form id="loginForm">
+						<div class="modal-body">
 							<div class="form-floating mb-3">
-								<input
-									type="text"
-									class="form-control"
-									id="floatingInput"
-									placeholder="Number"
-									name="number"
-									required
-								/>
-								<label for="floatingInput">Номер</label>
+								<div class="input-group has-validation">
+									<span class="input-group-text" id="addon-wrapping">+7</span>
+
+									<input
+										type="text"
+										class="form-control"
+										id="floatingInput"
+										placeholder="Номер телефона"
+										name="number"
+										required
+									/>
+								</div>
 							</div>
 							<div class="form-floating">
 								<input
@@ -197,21 +202,17 @@
 								/>
 								<label for="floatingPassword">Пароль</label>
 							</div>
-							<div class="row">
-								<div class="col">
-									<button type="submit" class="btn btn-primary">Войти</button>
-								</div>
-								<div class="col">
-									<a
-										class="btn btn-primary"
-										aria-current="page"
-										href="{{ url_for('register') }}"
-										>Регистрация</a
-									>
-								</div>
-							</div>
-						</form>
-					</div>
+						</div>
+						<div class="modal-footer">
+							<a
+								class="btn btn-secondary"
+								aria-current="page"
+								href="{{ url_for('register') }}"
+								>Регистрация</a
+							>
+							<button type="submit" class="btn btn-primary">Войти</button>
+						</div>
+					</form>
 				</div>
 			</div>
 		</div>

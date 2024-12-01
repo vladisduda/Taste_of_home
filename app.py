@@ -12,6 +12,7 @@ from flask_login import (
     login_required,
     current_user,
 )
+from datetime import timedelta
 
 app = Flask(__name__)
 app.secret_key = secrets.token_hex(16)  # Генерация безопасного секретного ключа
@@ -147,20 +148,40 @@ def register():
 # ___________________
 def get_notification_count():
     cur = mysql.connection.cursor()
+    query = ""
+    params = ()
 
-    query = """
-    SELECT COUNT(*) 
-    FROM orders
-    JOIN dish ON orders.id_dish = dish.id_dish
-    JOIN status_order ON orders.id_orders = status_order.id_order
-    WHERE dish.id_user = %s
-    AND status_order.status = 'issued'
-    """
+    if current_user.role in ["chef", "admin"]:
+        # Запрос для повара или администратора
+        query = """
+        SELECT COUNT(*) 
+        FROM orders
+        JOIN dish ON orders.id_dish = dish.id_dish
+        JOIN status_order ON orders.id_orders = status_order.id_order
+        WHERE dish.id_user = %s
+        AND status_order.status = 'issued'
+        """
+        params = (current_user.id,)
 
-    cur.execute(query, (current_user.id,))
-    notification_count = cur.fetchone()[0]
+    elif current_user.role == "courier":
+        # Запрос для курьера
+        query = """
+        SELECT COUNT(*) 
+        FROM orders
+        JOIN dish ON orders.id_dish = dish.id_dish
+        JOIN status_order ON orders.id_orders = status_order.id_order
+        WHERE status_order.status = 'ready and awaiting delivery'
+        """
+        # Нет необходимости передавать current_user.id
+        params = ()
+
+    if query:
+        cur.execute(query, params)
+        notification_count = cur.fetchone()[0] if cur.rowcount > 0 else 0
+    else:
+        notification_count = 0
+
     cur.close()
-
     return notification_count
 
 
@@ -179,7 +200,7 @@ def inject_notification_count():
 
 
 @app.context_processor
-def inject_dish_name():
+def inject_dish():
 
     def get_dish_name_by_id(id_dish):
         try:
@@ -188,13 +209,28 @@ def inject_dish_name():
             cur.execute(query, (id_dish,))
             result = cur.fetchone()
             cur.close()
-            return result[0] if result else "Неизвестное блюдо"
+            return result[0] if result else "Неизвестное блюдо (ИМЯ)"
         except Exception as e:
-            print(f"Ошибка при выполнении запроса: {e}")
-            return "Ошибка получения данных"
+            print(f"(ИМЯ) Ошибка при выполнении запроса: {e}")
+            return "(ИМЯ) Ошибка получения данных"
+
+    def get_dish_address_by_id(id_dish):
+        try:
+            cur = mysql.connection.cursor()
+            query = "SELECT address FROM dish WHERE id_dish = %s"
+            cur.execute(query, (id_dish,))
+            result = cur.fetchone()
+            cur.close()
+            return result[0] if result else "Неизвестное блюдо (Адрес)"
+        except Exception as e:
+            print(f"(Адрес) Ошибка при выполнении запроса: {e}")
+            return "(Адрес) Ошибка получения данных"
 
     # Возвращаем функцию, чтобы она была доступна в шаблонах
-    return dict(get_dish_name_by_id=get_dish_name_by_id)
+    return dict(
+        get_dish_name_by_id=get_dish_name_by_id,
+        get_dish_address_by_id=get_dish_address_by_id,
+    )
 
 
 # ___________________
@@ -207,13 +243,31 @@ def inject_user_name():
             cur.execute(query, (id_user,))
             result = cur.fetchone()
             cur.close()
-            return result[0] if result else "Неизвестный пользователь"
+            return result[0] if result else "Отсутствует"
         except Exception as e:
-            print(f"Ошибка при выполнении запроса: {e}")
-            return "Ошибка получения данных"
+            print(f"(ИМЯ) Ошибка при выполнении запроса: {e}")
+            return "(ИМЯ) Ошибка получения данных"
 
     # Возвращаем функцию, чтобы она была доступна в шаблонах
     return dict(get_user_name_by_id=get_user_name_by_id)
+
+
+# ___________________
+@app.context_processor
+def utility_processor():
+    def format_time(time_obj):
+        if not time_obj:
+            return "Не указано"
+        if isinstance(time_obj, timedelta):
+            total_seconds = int(time_obj.total_seconds())
+            hours = total_seconds // 3600
+            minutes = (total_seconds % 3600) // 60
+            if hours == 0:
+                return f"{minutes} мин"
+            return f"{hours}:{minutes:02} час"
+        return str(time_obj)
+
+    return dict(format_time=format_time)
 
 
 # ___________________
@@ -222,29 +276,60 @@ def inject_user_name():
 @app.route("/notifications")
 @login_required
 def notifications():
+    cur = (
+        mysql.connection.cursor()
+    )  # Используем dictionary=True для удобного доступа к данным
 
-    cur = mysql.connection.cursor()
+    if current_user.role == "chef":
+        # Если пользователь — повар, берутся данные только его блюд
+        query = """
+        SELECT 
+            orders.id_orders, 
+            orders.id_user AS order_user, 
+            orders.id_dish, 
+            orders.id_courier, 
+            orders.date, 
+            orders.price, 
+            orders.quantity, 
+            orders.address, 
+            orders.wish,
+            status_order.status,
+            status_order.estimated_time
+        FROM orders
+        JOIN dish ON orders.id_dish = dish.id_dish
+        JOIN status_order ON orders.id_orders = status_order.id_order
+        WHERE dish.id_user = %s
+        """
+        cur.execute(query, (current_user.id,))
 
-    query = """
-    SELECT 
-        orders.id_orders, 
-        orders.id_user AS order_user, 
-        orders.id_dish, 
-        orders.id_courier, 
-        orders.date, 
-        orders.price, 
-        orders.quantity, 
-        orders.address, 
-        orders.wish,
-        status_order.status,
-        status_order.estimated_time
-    FROM orders
-    JOIN dish ON orders.id_dish = dish.id_dish
-    JOIN status_order ON orders.id_orders = status_order.id_order
-    WHERE dish.id_user = %s
-    """
+    elif current_user.role == "courier":
+        # Если пользователь — курьер, берутся все данные
+        query = """
+        SELECT 
+            orders.id_orders, 
+            orders.id_user AS order_user, 
+            orders.id_dish, 
+            orders.id_courier, 
+            orders.date, 
+            orders.price, 
+            orders.quantity, 
+            orders.address, 
+            orders.wish,
+            status_order.status,
+            status_order.estimated_time
+        FROM orders
+        JOIN dish ON orders.id_dish = dish.id_dish
+        JOIN status_order ON orders.id_orders = status_order.id_order
+        """
+        cur.execute(query)
 
-    cur.execute(query, (current_user.id,))
+    else:
+        # Если роль пользователя не соответствует требованиям, возвращаем пустой список
+        notifications = []
+        cur.close()
+        return render_template("notifications.html", notifications=notifications)
+
+    # Получаем результаты
     notifications = cur.fetchall()
     cur.close()
 
@@ -258,6 +343,25 @@ def notifications():
 @login_required
 def update_status(id_order):
     new_status = request.form.get("status")
+
+    if current_user.role == "courier":
+        id_courier = current_user.id
+        if new_status == "on the way":
+            cur = mysql.connection.cursor()
+            cur.execute(
+                """
+                UPDATE orders
+                SET id_courier = %s
+                WHERE id_orders = %s
+            """,
+                (id_courier, id_order),
+            )
+            mysql.connection.commit()
+            cur.close()
+
+            print("Курьер успешно откликнулся на заказ.")
+        else:
+            print("Ошибка добавления курьера.")
 
     if new_status:
         cur = mysql.connection.cursor()
@@ -331,7 +435,7 @@ def add_order(id_dish):
 
         if request.method == "POST":
 
-            wish = request.form.get("wish", "")
+            wish = request.form.get("wish", None)
             quantity = int(request.form.get("quantity", 1))
 
             price_per_item = float(dish[1])
@@ -373,7 +477,7 @@ def add_order(id_dish):
             )
             mysql.connection.commit()
 
-            print("Заказ успешно оформлен и уведомление отправлено!")
+            print("Заказ успешно оформлен")
             return redirect(url_for("index"))
 
     except Exception as e:
@@ -565,10 +669,16 @@ def orders():
     # Проверяем роль текущего пользователя
     if user and user[0] == "admin":
         # Если пользователь админ, возвращаем все заказы
-        cur.execute("SELECT * FROM orders")
+        cur.execute(
+            "SELECT orders.*, status_order.status FROM orders, status_order WHERE orders.id_orders = status_order.id_order"
+        )
+
     else:
         # Если пользователь не админ, возвращаем только его заказы
-        cur.execute("SELECT * FROM orders WHERE id_user = %s", (current_user.id,))
+        cur.execute(
+            "SELECT orders.*, status_order.status FROM orders, status_order WHERE id_user = %s AND orders.id_orders = status_order.id_order",
+            (current_user.id,),
+        )
 
     orders = cur.fetchall()  # Получаем все заказы или только заказы пользователя
     cur.close()
