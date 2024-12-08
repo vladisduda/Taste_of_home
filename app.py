@@ -243,7 +243,7 @@ def inject_user_name():
             cur.execute(query, (id_user,))
             result = cur.fetchone()
             cur.close()
-            return result[0] if result else "Отсутствует"
+            return result[0] if result else ""
         except Exception as e:
             print(f"(ИМЯ) Ошибка при выполнении запроса: {e}")
             return "(ИМЯ) Ошибка получения данных"

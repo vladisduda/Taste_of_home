@@ -21,7 +21,9 @@
 				<th>Адрес доставки</th>
 				<th>Пожелания к заказу</th>
 				<th>Дата заказа</th>
-				<th></th>
+				{% if current_user.role == 'admin' %} {% else %}
+				<td></td>
+				<!-- Написать отзыв -->{% endif %}
 			</tr>
 		</thead>
 		<tbody class="table table-bordered text-center">
@@ -68,6 +70,7 @@
 
 				<td>{{ order[4] }}</td>
 				<!-- Дата заказа -->
+				{% if current_user.role == 'admin' %} {% else %}
 				<td>
 					<form method="GET" action="">
 						<button type="submit" class="btn btn-primary" disabled>
@@ -75,7 +78,7 @@
 						</button>
 					</form>
 				</td>
-				<!-- Написать отзыв -->
+				<!-- Написать отзыв -->{% endif %}
 			</tr>
 			{% endfor %}
 		</tbody>

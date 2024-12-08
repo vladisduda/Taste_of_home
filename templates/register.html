@@ -5,7 +5,7 @@
 		<div class="row">
 			<div class="col">
 				<div class="form-group mb-3">
-					<label for="number">Номер телефона:</label>
+					<label for="numberInput">Номер телефона:</label>
 					<div class="input-group has-validation">
 						<span class="input-group-text" id="addon-wrapping">+7</span>
 						<input
@@ -13,39 +13,61 @@
 							class="form-control"
 							name="number"
 							id="numberInput"
+							pattern="\d{10}"
+							title="Введите 10 цифр номера телефона"
+							required
 						/>
-						<div class="invalid-feedback">Заполните поле номера</div>
+						<div class="invalid-feedback">
+							Введите корректный номер телефона
+						</div>
 					</div>
 				</div>
 
 				<div class="form-group mb-3">
-					<label for="password">Пароль:</label>
+					<label for="passwordInput">Пароль:</label>
 					<input
 						type="password"
 						class="form-control"
 						name="password"
 						id="passwordInput"
+						minlength="6"
+						required
 					/>
-					<div class="invalid-feedback">Заполните поле пароля</div>
+					<div class="invalid-feedback">
+						Пароль должен содержать не менее 6 символов
+					</div>
 				</div>
 			</div>
 			<div class="col">
 				<div class="form-group mb-3">
-					<label for="role">Роль:</label>
-					<select class="form-control" name="role">
+					<label for="nameInput">ФИО:</label>
+					<input
+						type="text"
+						name="name"
+						id="nameInput"
+						class="form-control"
+						required
+					/>
+					<div class="invalid-feedback">Заполните поле ФИО</div>
+				</div>
+				<div class="form-group mb-3">
+					<label for="roleSelect">Роль:</label>
+					<select class="form-control" name="role" id="roleSelect" required>
 						<option value="customer">Пользователь</option>
 						<option value="chef">Повар</option>
 						<option value="courier">Курьер</option>
 					</select>
+					<div class="invalid-feedback">Выберите роль</div>
 				</div>
 				<div class="form-group mb-3">
-					<label for="address">Адрес:</label>
+					<label for="addressInput">Адрес:</label>
 					<input
 						type="text"
 						name="address"
 						id="addressInput"
 						class="form-control"
 						readonly
+						required
 					/>
 					<div class="invalid-feedback">Выберите место на карте</div>
 				</div>
@@ -75,11 +97,12 @@
 		.addEventListener('submit', function (e) {
 			let isValid = true
 
-			// Проверяем поля "номер телефона", "пароль" и "адрес"
+			// Проверяем поля "номер телефона", "пароль", "адрес" и "ФИО"
 			const requiredFields = [
 				document.getElementById('numberInput'),
 				document.getElementById('passwordInput'),
 				document.getElementById('addressInput'),
+				document.getElementById('nameInput'),
 			]
 
 			requiredFields.forEach(field => {
